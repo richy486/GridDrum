@@ -46,7 +46,7 @@ end
 
 function forever()
   while true do
-    clock.sync(1/4) -- clock sync is in seconds.
+    clock.sync(1/4) -- Steps per beat.
     if play then
       beatColumn = beatColumn + 1
       if beatColumn > gridSize.width then
@@ -63,7 +63,6 @@ function midiSetup()
   out_midi = midi.connect(1) 
   print("Midi setup")
   print(out_midi)
-  -- out_midi:send{144,60,127}
 end
 
 -- Grid
@@ -80,8 +79,6 @@ function is_connected()
 end
 
 function on_grid_key(x,y,state)
-  -- focus.x = x
-  -- focus.y = y
   if state == 1 then
     value = grid[x][y]
     grid[x][y] = value == false
@@ -101,22 +98,20 @@ end
 
 function update()
   g:all(0)
-  -- g:led(focus.x,focus.y,focus.brightness)
-  
+
   for x = 1, gridSize.width do
     for y = 1, gridSize.height do
-      
-      
       if (beatColumn == x) then
         
-        if (grid[x][y] == true) then
-          -- Selected positon is on the line, play the note.
+        if (play == true) and (grid[x][y] == true) then
+          -- Selected position is on the line, play the note.
           key = 100
+          velocity = 127
           channel = y
-          out_midi:note_on(key, 127, channel)
-          out_midi:note_off(key, 127, channel)
+          out_midi:note_on(key, velocity, channel)
+          out_midi:note_off(key, velocity, channel)
         end
-        -- Draw the line, not on selected positions.
+        -- Draw the line.
         g:led(x, y, focus.brightness)
       end
       
@@ -125,12 +120,8 @@ function update()
         g:led(x, y, focus.brightness)
       end
       
-      
     end
   end
-  
-  
-  -- print("key ", key, ", channel ", channel)
   
   g:refresh()
   redraw()
@@ -140,26 +131,19 @@ end
 
 function key(id,state)
   if id == 2 and state == 1 then
-    -- focus.brightness = 15
     play = not play
     print("play: ", play)
   elseif id == 3 and state == 1 then
-    -- focus.brightness = 5
+    -- nothing
   end
-  -- update()
 end
 
 function enc(id,delta)
   if id == 2 then
-  --   focus.x = clamp(focus.x + delta, 1, gridSize.width)
-    -- bpm = clock.get_tempo() + delta
-    -- params:set('clock_tempo', bpm)
     params:delta("clock_tempo",delta)
-  
   elseif id == 3 then
-  --   focus.y = clamp(focus.y + delta, 1, gridSize.height)
+    -- nothing
   end
-  -- update()
 end
 
 -- Render on Norns
